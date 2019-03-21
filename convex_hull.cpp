@@ -1,242 +1,230 @@
 // A divide and conquer program to find convex 
-// hull of a given set of points. 
-#include<bits/stdc++.h>
+// hull of a given set of points.
 
-using namespace std;
+// A divide and conquer program to find convex
+// hull of a given set of points.
+#include <bits/stdc++.h>
+#include <stdexcept>
 
-// stores the centre of polygon (It is made 
-// global because it is used in compare function) 
-pair<int, int> mid;
+#include "convex_hull.hpp"
 
-// determines the quadrant of a point 
-// (used in compare()) 
-int quad(pair<int, int> p) {
-    if (p.first >= 0 && p.second >= 0)
-        return 1;
-    if (p.first <= 0 && p.second >= 0)
-        return 2;
-    if (p.first <= 0 && p.second <= 0)
-        return 3;
-    return 4;
-}
+namespace convex_hull {
+    // stores the centre of polygon (It is made
+    // global because it is used in compare function)
+    std::pair<int, int> mid;
 
-// Checks whether the line is crossing the polygon 
-int orientation(pair<int, int> a, pair<int, int> b, pair<int, int> c) {
-    int res = (b.second - a.second) * (c.first - b.first) -
-              (c.second - b.second) * (b.first - a.first);
 
-    if (res == 0)
-        return 0;
-    if (res > 0)
-        return 1;
-    return -1;
-}
+    // determines the quadrant of a point
+    // (used in compare())
+    int quad(std::pair<int, int> p) {
+        if (p.first >= 0 && p.second >= 0)
+            return 1;
+        if (p.first <= 0 && p.second >= 0)
+            return 2;
+        if (p.first <= 0 && p.second <= 0)
+            return 3;
+        return 4;
+    }
 
-// compare function for sorting 
-bool compare(pair<int, int> p1, pair<int, int> q1) {
-    pair<int, int> p = make_pair(p1.first - mid.first,
-                                 p1.second - mid.second);
-    pair<int, int> q = make_pair(q1.first - mid.first,
-                                 q1.second - mid.second);
+    // Checks whether the line is crossing the polygon
+    int orientation(std::pair<int, int> a, std::pair<int, int> b, std::pair<int, int> c) {
+        int res = (b.second - a.second) * (c.first - b.first) -
+                  (c.second - b.second) * (b.first - a.first);
 
-    int one = quad(p);
-    int two = quad(q);
+        if (res == 0)
+            return 0;
+        if (res > 0)
+            return 1;
+        return -1;
+    }
 
-    if (one != two)
-        return (one < two);
-    return (p.second * q.first < q.second * p.first);
-}
+    // compare function for sorting
+    bool compare(std::pair<int, int> p1, std::pair<int, int> q1) {
+        std::pair<int, int> p = std::make_pair(p1.first - mid.first, p1.second - mid.second);
+        std::pair<int, int> q = std::make_pair(q1.first - mid.first, q1.second - mid.second);
 
-// Finds upper tangent of two polygons 'a' and 'b' 
-// represented as two vectors. 
-vector<pair<int, int>> merger(vector<pair<int, int> > a,
-                              vector<pair<int, int> > b) {
-    // n1 -> number of points in polygon a 
-    // n2 -> number of points in polygon b 
-    int n1 = a.size(), n2 = b.size();
+        int one = quad(p);
+        int two = quad(q);
 
-    int ia = 0, ib = 0;
-    for (int i = 1; i < n1; i++)
-        if (a[i].first > a[ia].first)
-            ia = i;
-
-    // ib -> leftmost point of b 
-    for (int i = 1; i < n2; i++)
-        if (b[i].first < b[ib].first)
-            ib = i;
-
-    // finding the upper tangent 
-    int inda = ia, indb = ib;
-    bool done = 0;
-    while (!done) {
-        done = 1;
-        while (orientation(b[indb], a[inda], a[(inda + 1) % n1]) >= 0)
-            inda = (inda + 1) % n1;
-
-        while (orientation(a[inda], b[indb], b[(n2 + indb - 1) % n2]) <= 0) {
-            indb = (n2 + indb - 1) % n2;
-            done = 0;
+        if (one != two) {
+//        cout << "result: " << (one < two) << std::endl;
+            return (one < two);
         }
+//    cout << "result: " << (p.second * q.first < q.second * p.first) << std::endl;
+        return (p.second * q.first < q.second * p.first);
     }
 
-    int uppera = inda, upperb = indb;
-    inda = ia, indb = ib;
-    done = 0;
-    int g = 0;
-    while (!done)//finding the lower tangent 
-    {
-        done = 1;
-        while (orientation(a[inda], b[indb], b[(indb + 1) % n2]) >= 0)
-            indb = (indb + 1) % n2;
+    // Finds upper tangent of two polygons 'a' and 'b'
+    // represented as two vectors.
+    std::vector<std::pair<int, int>> merger(std::vector<std::pair<int, int> > a, std::vector<std::pair<int, int> > b) {
+        // n1 -> number of points in polygon a
+        // n2 -> number of points in polygon b
+        int n1 = a.size(), n2 = b.size();
 
-        while (orientation(b[indb], a[inda], a[(n1 + inda - 1) % n1]) <= 0) {
-            inda = (n1 + inda - 1) % n1;
-            done = 0;
-        }
-    }
+        int ia = 0, ib = 0;
+        for (int i = 1; i < n1; i++)
+            if (a[i].first > a[ia].first)
+                ia = i;
 
-    int lowera = inda, lowerb = indb;
-    vector<pair<int, int>> ret;
+        // ib -> leftmost point of b
+        for (int i = 1; i < n2; i++)
+            if (b[i].first < b[ib].first)
+                ib = i;
 
-    //ret contains the convex hull after merging the two convex hulls 
-    //with the points sorted in anti-clockwise order 
-    int ind = uppera;
-    ret.push_back(a[uppera]);
-    while (ind != lowera) {
-        ind = (ind + 1) % n1;
-        ret.push_back(a[ind]);
-    }
+        // finding the upper tangent
+        int inda = ia, indb = ib;
+        bool done = 0;
+        while (!done) {
+            done = 1;
+            while (orientation(b[indb], a[inda], a[(inda + 1) % n1]) >= 0)
+                inda = (inda + 1) % n1;
 
-    ind = lowerb;
-    ret.push_back(b[lowerb]);
-    while (ind != upperb) {
-        ind = (ind + 1) % n2;
-        ret.push_back(b[ind]);
-    }
-    return ret;
-
-}
-
-// Brute force algorithm to find convex hull for a set 
-// of less than 6 points 
-vector<pair<int, int>> bruteHull(vector<pair<int, int>> a) {
-    cout << "input: ";
-    for (auto e:a) {
-        cout << "(" << e.first << ";" << e.second << ")";
-    }
-    cout << endl;
-    // Take any pair of points from the set and check 
-    // whether it is the edge of the convex hull or not. 
-    // if all the remaining points are on the same side 
-    // of the line then the line is the edge of convex 
-    // hull otherwise not 
-    set<pair<int, int> > s;
-
-    for (int i = 0; i < a.size(); i++) {
-        for (int j = i + 1; j < a.size(); j++) {
-            int x1 = a[i].first;
-            int y1 = a[i].second;
-            int y2 = a[j].second;
-            int x2 = a[j].first;
-
-            int a1 = y1 - y2;
-            int b1 = x2 - x1;
-            int c1 = x1 * y2 - y1 * x2;
-            int pos = 0, neg = 0;
-            for (int k = 0; k < a.size(); k++) {
-                if (a1 * a[k].first + b1 * a[k].second + c1 <= 0){
-                    pos++;
-                }
-                if (a1 * a[k].first + b1 * a[k].second + c1 >= 0){
-                    pos++;
-                }
-            }
-            if (pos == a.size() || neg == a.size()) {
-                s.insert(a[i]);
-                s.insert(a[j]);
+            while (orientation(a[inda], b[indb], b[(n2 + indb - 1) % n2]) <= 0) {
+                indb = (n2 + indb - 1) % n2;
+                done = 0;
             }
         }
+
+        int uppera = inda, upperb = indb;
+        inda = ia, indb = ib;
+        done = 0;
+        int g = 0;
+        while (!done)//finding the lower tangent
+        {
+            done = 1;
+            while (orientation(a[inda], b[indb], b[(indb + 1) % n2]) >= 0)
+                indb = (indb + 1) % n2;
+
+            while (orientation(b[indb], a[inda], a[(n1 + inda - 1) % n1]) <= 0) {
+                inda = (n1 + inda - 1) % n1;
+                done = 0;
+            }
+        }
+
+        int lowera = inda, lowerb = indb;
+        std::vector<std::pair<int, int>> ret;
+
+        //ret contains the convex hull after merging the two convex hulls
+        //with the points sorted in anti-clockwise order
+        int ind = uppera;
+        ret.push_back(a[uppera]);
+        while (ind != lowera) {
+            ind = (ind + 1) % n1;
+            ret.push_back(a[ind]);
+        }
+
+        ind = lowerb;
+        ret.push_back(b[lowerb]);
+        while (ind != upperb) {
+            ind = (ind + 1) % n2;
+            ret.push_back(b[ind]);
+        }
+        return ret;
+
     }
 
-    vector<pair<int, int>> ret;
-    for (auto e:s)
-        ret.push_back(e);
+    // Brute force algorithm to find convex hull for a set
+    // of less than 6 points
+    std::vector<std::pair<int, int>> bruteHull(std::vector<std::pair<int, int>> a) {
+        // Take any pair of points from the set and check
+        // whether it is the edge of the convex hull or not.
+        // if all the remaining points are on the same side
+        // of the line then the line is the edge of convex
+        // hull otherwise not
 
-    // Sorting the points in the anti-clockwise order 
-    mid = {0, 0};
-    int n = ret.size();
-    for (int i = 0; i < n; i++) {
-        mid.first += ret[i].first;
-        mid.second += ret[i].second;
-        ret[i].first *= n;
-        ret[i].second *= n;
+//        std::cout << "input: " << std::endl;
+//        point_util::print(a);
+
+
+        std::set<std::pair<int, int>> s;
+
+        for (int i = 0; i < a.size(); i++) {
+            for (int j = i + 1; j < a.size(); j++) {
+                int x1 = a[i].first, x2 = a[j].first;
+                int y1 = a[i].second, y2 = a[j].second;
+
+                int a1 = y1 - y2;
+                int b1 = x2 - x1;
+                int c1 = x1 * y2 - y1 * x2;
+                int pos = 0, neg = 0;
+                for (int k = 0; k < a.size(); k++) {
+                    if (a1 * a[k].first + b1 * a[k].second + c1 <= 0)
+                        neg++;
+                    if (a1 * a[k].first + b1 * a[k].second + c1 >= 0)
+                        pos++;
+                }
+                if (pos == a.size() || neg == a.size()) {
+                    s.insert(a[i]);
+                    s.insert(a[j]);
+                }
+            }
+        }
+
+        std::vector<std::pair<int, int>> ret;
+        for (auto e:s)
+            ret.push_back(e);
+
+        // Sorting the points in the anti-clockwise order
+        mid = {0, 0};
+        int n = ret.size();
+        for (int i = 0; i < n; i++) {
+            mid.first += ret[i].first;
+            mid.second += ret[i].second;
+            ret[i].first *= n;
+            ret[i].second *= n;
+        }
+//        std::cout << "mid first: " << mid.first << std::endl;
+//        std::cout << "mid second: " << mid.second << std::endl;
+
+//        std::cout << "presort: ";
+//        print(ret);
+        sort(ret.begin(), ret.end(), compare);
+//        std::cout << "after sort: ";
+//        print(ret);
+
+        for (int i = 0; i < n; i++)
+            ret[i] = std::make_pair(ret[i].first / n, ret[i].second / n);
+
+//        std::cout << "output: ";
+//        print(ret);
+
+        return ret;
     }
-    sort(ret.begin(), ret.end(), compare);
-    for (int i = 0; i < n; i++)
-        ret[i] = make_pair(ret[i].first / n, ret[i].second / n);
 
-    cout << "output: ";
-    for (auto e:ret) {
-        cout << "(" << e.first << ";" << e.second << ")";
+    void assert_unique_points(const std::vector<std::pair<int, int>> points) {
+        std::set<std::pair<int, int>> s;
+        for (auto &item : s) {
+            s.insert(item);
+        }
+        if (s.size() != points.size()) {
+            throw std::invalid_argument("points are not unique");
+        }
     }
-    cout << endl;
-    return ret;
-}
 
-// Returns the convex hull for the given set of points 
-vector<pair<int, int>> divide(vector<pair<int, int>> a) {
-    // If the number of points is less than 6 then the 
-    // function uses the brute algorithm to find the 
-    // convex hull 
-    if (a.size() <= 5)
-        return bruteHull(a);
+    // Returns the convex hull for the given set of points
+    std::vector<std::pair<int, int>> get_convex_hull(std::vector<std::pair<int, int>> a) {
+        // If the number of points is less than 6 then the
+        // function uses the brute algorithm to find the
+        // convex hull
+        if (a.size() <= 5) {
+            return bruteHull(a);
+        }
 
-    // left contains the left half points 
-    // right contains the right half points 
-    vector<pair<int, int>> left, right;
-    for (int i = 0; i < a.size() / 2; i++)
-        left.push_back(a[i]);
-    for (int i = a.size() / 2; i < a.size(); i++)
-        right.push_back(a[i]);
+        // left contains the left half points
+        // right contains the right half points
+        std::vector<std::pair<int, int>> left, right;
+        for (int i = 0; i < a.size() / 2; i++) {
+            left.push_back(a[i]);
+        }
+        for (int i = static_cast<int>(a.size() / 2); i < a.size(); i++) {
+            right.push_back(a[i]);
+        }
 
-    // convex hull for the left and right sets 
-    vector<pair<int, int>> left_hull = divide(left);
-    vector<pair<int, int>> right_hull = divide(right);
+        // convex hull for the left and right sets
+        std::vector<std::pair<int, int>> left_hull = get_convex_hull(left);
+        std::vector<std::pair<int, int>> right_hull = get_convex_hull(right);
 
-    // merging the convex hulls 
-    return merger(left_hull, right_hull);
-}
-
-// Driver code
-int main() {
-    vector<pair<int, int> > a;
-    a.emplace_back(0, 0);
-    a.emplace_back(1, -4);
-    a.emplace_back(-1, -5);
-    a.emplace_back(-5, -3);
-    a.emplace_back(-3, -1);
-    a.emplace_back(-1, -3);
-    a.emplace_back(-2, -2);
-    a.emplace_back(-1, -1);
-    a.emplace_back(-2, -1);
-    a.emplace_back(-1, 1);
-
-
-    // sorting the set of points according
-    // to the x-coordinate
-    sort(a.begin(), a.end());
-//    for (const auto &e  : a) {
-//        cout << "(" << e.first << ";" << e.second << ")";
-//    }
-//    cout << "\n";
-
-    vector<pair<int, int> > ans = divide(a);
-
-    cout << "convex hull: ";
-    for (auto e:ans) {
-        cout << "(" << e.first << ";" << e.second << ")";
+        // merging the convex hulls
+        return merger(left_hull, right_hull);
     }
-    cout << endl;
-
-    return 0;
 }
